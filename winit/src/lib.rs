@@ -1013,8 +1013,17 @@ async fn run_instance<P>(
                         };
 
                         match window_event {
-                            winit::event::WindowEvent::Resized(_)
-                            | winit::event::WindowEvent::Occluded(false) => {
+                            winit::event::WindowEvent::Resized(size) => {
+                                // Release the swapchain of a minimized window
+                                if size.width == 0 || size.height == 0 {
+                                    if let Some(compositor) = &mut compositor {
+                                        compositor.configure_surface(&mut window.surface, 1, 1);
+                                    }
+                                }
+
+                                window.raw.request_redraw();
+                            }
+                            winit::event::WindowEvent::Occluded(false) => {
                                 window.raw.request_redraw();
                             }
                             winit::event::WindowEvent::ThemeChanged(theme) => {
